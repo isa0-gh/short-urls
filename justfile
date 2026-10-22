@@ -3,7 +3,7 @@ set export
 GOEXPERIMENT := "jsonv2"
 BINARY_NAME := "api"
 MAIN_PATH := "cmd/api/main.go"
-DOCKER_IMAGE := "short-urls"
+DOCKER_IMAGE := "github.com/isa0-gh/short-urls"
 SQLC_VERSION := "v1.31.1"
 SWAG_VERSION := "v1.16.6"
 GOVULNCHECK_VERSION := "v1.9.0"
