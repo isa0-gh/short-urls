@@ -124,11 +124,12 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	return i, err
 }
 
-const deleteShortLink = `-- name: DeleteShortLink :exec
+const deleteShortLink = `-- name: DeleteShortLink :one
 UPDATE links
 SET deleted_at = CURRENT_TIMESTAMP
 WHERE id = $1
   AND owner_id = $2
+RETURNING short_code
 `
 
 type DeleteShortLinkParams struct {
@@ -136,9 +137,11 @@ type DeleteShortLinkParams struct {
 	OwnerID pgtype.UUID
 }
 
-func (q *Queries) DeleteShortLink(ctx context.Context, arg DeleteShortLinkParams) error {
-	_, err := q.db.Exec(ctx, deleteShortLink, arg.ID, arg.OwnerID)
-	return err
+func (q *Queries) DeleteShortLink(ctx context.Context, arg DeleteShortLinkParams) (string, error) {
+	row := q.db.QueryRow(ctx, deleteShortLink, arg.ID, arg.OwnerID)
+	var short_code string
+	err := row.Scan(&short_code)
+	return short_code, err
 }
 
 const getDestinationURL = `-- name: GetDestinationURL :one
@@ -284,11 +287,12 @@ func (q *Queries) LogoutSession(ctx context.Context, sessionHash string) error {
 	return err
 }
 
-const updateDestination = `-- name: UpdateDestination :exec
+const updateDestination = `-- name: UpdateDestination :one
 UPDATE
   links
 SET destination_url = $1
 WHERE id = $2 AND owner_id = $3
+RETURNING short_code
 `
 
 type UpdateDestinationParams struct {
@@ -297,7 +301,9 @@ type UpdateDestinationParams struct {
 	OwnerID        pgtype.UUID
 }
 
-func (q *Queries) UpdateDestination(ctx context.Context, arg UpdateDestinationParams) error {
-	_, err := q.db.Exec(ctx, updateDestination, arg.DestinationUrl, arg.ID, arg.OwnerID)
-	return err
+func (q *Queries) UpdateDestination(ctx context.Context, arg UpdateDestinationParams) (string, error) {
+	row := q.db.QueryRow(ctx, updateDestination, arg.DestinationUrl, arg.ID, arg.OwnerID)
+	var short_code string
+	err := row.Scan(&short_code)
+	return short_code, err
 }

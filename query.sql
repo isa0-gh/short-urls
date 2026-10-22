@@ -82,14 +82,16 @@ WHERE
 ORDER BY created_at DESC
 LIMIT $2;
 
--- name: UpdateDestination :exec
+-- name: UpdateDestination :one
 UPDATE
   links
 SET destination_url = $1
-WHERE id = $2 AND owner_id = $3;
+WHERE id = $2 AND owner_id = $3
+RETURNING short_code;
 
--- name: DeleteShortLink :exec
+-- name: DeleteShortLink :one
 UPDATE links
 SET deleted_at = CURRENT_TIMESTAMP
 WHERE id = $1
-  AND owner_id = $2;
+  AND owner_id = $2
+RETURNING short_code;
