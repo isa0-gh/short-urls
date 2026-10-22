@@ -11,6 +11,35 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const createSession = `-- name: CreateSession :one
+INSERT INTO sessions (session_hash, owner_id, expires_at)
+SELECT $1, u.id, $3
+FROM users AS u
+WHERE u.id = $2
+  AND u.deleted_at IS NULL
+RETURNING id, session_hash, owner_id, created_at, expires_at, deleted_at
+`
+
+type CreateSessionParams struct {
+	SessionHash string
+	ID          pgtype.UUID
+	ExpiresAt   pgtype.Timestamptz
+}
+
+func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error) {
+	row := q.db.QueryRow(ctx, createSession, arg.SessionHash, arg.ID, arg.ExpiresAt)
+	var i Session
+	err := row.Scan(
+		&i.ID,
+		&i.SessionHash,
+		&i.OwnerID,
+		&i.CreatedAt,
+		&i.ExpiresAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
 const createShortLink = `-- name: CreateShortLink :one
 INSERT INTO links (
   owner_id,short_code,destination_url
@@ -170,6 +199,23 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error)
 	return i, err
 }
 
+const getUserIDBySessionHash = `-- name: GetUserIDBySessionHash :one
+SELECT s.owner_id
+FROM sessions AS s
+JOIN users AS u ON u.id = s.owner_id
+WHERE s.session_hash = $1
+  AND s.deleted_at IS NULL
+  AND s.expires_at > CURRENT_TIMESTAMP
+  AND u.deleted_at IS NULL
+`
+
+func (q *Queries) GetUserIDBySessionHash(ctx context.Context, sessionHash string) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, getUserIDBySessionHash, sessionHash)
+	var owner_id pgtype.UUID
+	err := row.Scan(&owner_id)
+	return owner_id, err
+}
+
 const listShortLinks = `-- name: ListShortLinks :many
 SELECT
   id, owner_id, short_code, destination_url, created_at, deleted_at
@@ -212,6 +258,30 @@ func (q *Queries) ListShortLinks(ctx context.Context, arg ListShortLinksParams) 
 		return nil, err
 	}
 	return items, nil
+}
+
+const logoutAllSessions = `-- name: LogoutAllSessions :exec
+UPDATE sessions
+SET deleted_at = CURRENT_TIMESTAMP
+WHERE owner_id = $1
+  AND deleted_at IS NULL
+`
+
+func (q *Queries) LogoutAllSessions(ctx context.Context, ownerID pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, logoutAllSessions, ownerID)
+	return err
+}
+
+const logoutSession = `-- name: LogoutSession :exec
+UPDATE sessions
+SET deleted_at = CURRENT_TIMESTAMP
+WHERE session_hash = $1
+  AND deleted_at IS NULL
+`
+
+func (q *Queries) LogoutSession(ctx context.Context, sessionHash string) error {
+	_, err := q.db.Exec(ctx, logoutSession, sessionHash)
+	return err
 }
 
 const updateDestination = `-- name: UpdateDestination :exec

@@ -13,8 +13,17 @@ type Link struct {
 	OwnerID        pgtype.UUID
 	ShortCode      string
 	DestinationUrl string
-	CreatedAt      pgtype.Timestamp
-	DeletedAt      pgtype.Timestamp
+	CreatedAt      pgtype.Timestamptz
+	DeletedAt      pgtype.Timestamptz
+}
+
+type Session struct {
+	ID          pgtype.UUID
+	SessionHash string
+	OwnerID     pgtype.UUID
+	CreatedAt   pgtype.Timestamptz
+	ExpiresAt   pgtype.Timestamptz
+	DeletedAt   pgtype.Timestamptz
 }
 
 type Telemetry struct {
@@ -23,7 +32,7 @@ type Telemetry struct {
 	ReferrerUrl pgtype.Text
 	UserAgent   pgtype.Text
 	IpAddress   pgtype.Text
-	CreatedAt   pgtype.Timestamp
+	CreatedAt   pgtype.Timestamptz
 }
 
 type User struct {
@@ -31,6 +40,6 @@ type User struct {
 	Username     string
 	Email        string
 	PasswordHash string
-	CreatedAt    pgtype.Timestamp
-	DeletedAt    pgtype.Timestamp
+	CreatedAt    pgtype.Timestamptz
+	DeletedAt    pgtype.Timestamptz
 }

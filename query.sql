@@ -16,6 +16,35 @@ FROM users
 WHERE email = $1
   AND deleted_at IS NULL;
 
+-- name: GetUserIDBySessionHash :one
+SELECT s.owner_id
+FROM sessions AS s
+JOIN users AS u ON u.id = s.owner_id
+WHERE s.session_hash = $1
+  AND s.deleted_at IS NULL
+  AND s.expires_at > CURRENT_TIMESTAMP
+  AND u.deleted_at IS NULL;
+
+-- name: CreateSession :one
+INSERT INTO sessions (session_hash, owner_id, expires_at)
+SELECT $1, u.id, $3
+FROM users AS u
+WHERE u.id = $2
+  AND u.deleted_at IS NULL
+RETURNING *;
+
+-- name: LogoutSession :exec
+UPDATE sessions
+SET deleted_at = CURRENT_TIMESTAMP
+WHERE session_hash = $1
+  AND deleted_at IS NULL;
+
+-- name: LogoutAllSessions :exec
+UPDATE sessions
+SET deleted_at = CURRENT_TIMESTAMP
+WHERE owner_id = $1
+  AND deleted_at IS NULL;
+
 -- name: GetDestinationURL :one
 SELECT
   destination_url
