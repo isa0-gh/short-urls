@@ -21,6 +21,10 @@ import (
 // @description API for managing users and shortlinks.
 // @host        localhost:8080
 // @BasePath    /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Enter a bearer token in the format: Bearer {token}.
 
 var (
 	Port      string
@@ -87,12 +91,11 @@ func main() {
 	linkHandler := handler.NewShortLinkHandler(linkSrv)
 
 	// routing
-	mux := http.NewServeMux()
+	apiMux := http.NewServeMux()
 
 	// public routes
-	mux.HandleFunc("POST /login", authHandler.LoginUser)
-	mux.HandleFunc("POST /register", authHandler.CreateUser)
-	mux.HandleFunc("GET /s/{shortCode}", linkHandler.RedirectToDestination)
+	apiMux.HandleFunc("POST /login", authHandler.LoginUser)
+	apiMux.HandleFunc("POST /register", authHandler.CreateUser)
 
 	authMiddleware := middleware.AuthMiddleware(authSrv)
 	protected := func(h http.HandlerFunc) http.Handler {
@@ -100,11 +103,15 @@ func main() {
 	}
 
 	// auth protected routes
-	mux.Handle("GET /profile", protected(userHandler.GetUserDetails))
+	apiMux.Handle("GET /profile", protected(userHandler.GetUserDetails))
 
-	mux.Handle("POST /create", protected(linkHandler.CreateShortlink))
-	mux.Handle("DELETE /link/{shortCode}", protected(linkHandler.DeleteShortLink))
-	mux.Handle("POST /link/{shortCode}", protected(linkHandler.UpdateShortLink))
-	mux.Handle("GET /links", protected(linkHandler.ListShortLinks))
+	apiMux.Handle("POST /create", protected(linkHandler.CreateShortlink))
+	apiMux.Handle("DELETE /link/{shortCode}", protected(linkHandler.DeleteShortLink))
+	apiMux.Handle("POST /link/{shortCode}", protected(linkHandler.UpdateShortLink))
+	apiMux.Handle("GET /links", protected(linkHandler.ListShortLinks))
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /s/{shortCode}", linkHandler.RedirectToDestination)
+	mux.Handle("/api/v1/", http.StripPrefix("/api/v1", apiMux))
 	http.ListenAndServe(":"+Port, mux)
 }

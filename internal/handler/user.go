@@ -19,6 +19,15 @@ func NewUserHandler(userService *service.UserService) *UserHandler {
 	}
 }
 
+// GetUserDetails returns the authenticated user's profile.
+// @Summary Get user profile
+// @Tags users
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} dto.UserDetailsResponse
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /api/v1/profile [get]
 func (h *UserHandler) GetUserDetails(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middleware.UserIDFromContext(r.Context())
 	if !ok {

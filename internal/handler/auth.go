@@ -22,6 +22,16 @@ func NewAuthHandler(userService *service.UserService, authService *service.AuthS
 	}
 }
 
+// CreateUser registers a user account.
+// @Summary Register a user
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body dto.CreateUserRequest true "User details"
+// @Success 201 {object} dto.UserDetailsResponse
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /api/v1/register [post]
 func (h *AuthHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var req dto.CreateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -46,6 +56,17 @@ func (h *AuthHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// LoginUser authenticates a user and returns an access token.
+// @Summary Log in
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body dto.LoginUserRequest true "Login credentials"
+// @Success 201 {object} dto.LoginResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /api/v1/login [post]
 func (h *AuthHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	var req dto.LoginUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
