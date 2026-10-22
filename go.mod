@@ -3,10 +3,10 @@ module github.com/isa0-gh/short-urls
 go 1.27
 
 require (
-	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/jackc/pgx/v5 v5.11.0
 	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.23.0
+	github.com/swaggo/swag v1.16.6
 	golang.org/x/crypto v0.57.0
 )
 
@@ -24,7 +24,7 @@ require (
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
-	github.com/swaggo/swag v1.16.6 // indirect
+	github.com/rogpeppe/go-internal v1.16.0 // indirect
 	go.uber.org/atomic v1.12.0 // indirect
 	golang.org/x/mod v0.41.0 // indirect
 	golang.org/x/net v0.58.0 // indirect
