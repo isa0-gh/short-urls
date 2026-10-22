@@ -11,18 +11,23 @@ import (
 
 	"github.com/isa0-gh/short-urls/internal/db"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/bcrypt"
 )
 
+const sessionCacheTTL = 5 * time.Minute
+
 type AuthService struct {
-	queries *db.Queries
-	exp     time.Duration
+	queries     *db.Queries
+	redisClient *redis.Client
+	exp         time.Duration
 }
 
-func NewAuthService(queries *db.Queries, exp time.Duration) *AuthService {
+func NewAuthService(queries *db.Queries, redisClient *redis.Client, exp time.Duration) *AuthService {
 	return &AuthService{
-		queries: queries,
-		exp:     exp,
+		queries:     queries,
+		redisClient: redisClient,
+		exp:         exp,
 	}
 }
 
@@ -81,9 +86,24 @@ func (a *AuthService) VerifyToken(ctx context.Context, token string) (string, er
 	}
 
 	sessionHash := sha256.Sum256([]byte(token))
-	ownerID, err := a.queries.GetUserIDBySessionHash(ctx, hex.EncodeToString(sessionHash[:]))
+	sessionHashHex := hex.EncodeToString(sessionHash[:])
+	cacheKey := "session:" + sessionHashHex
+	if a.redisClient != nil {
+		cachedOwnerID, err := a.redisClient.Get(ctx, cacheKey).Result()
+		if err == nil {
+			var ownerID pgtype.UUID
+			if ownerID.Scan(cachedOwnerID) == nil {
+				return ownerID.String(), nil
+			}
+		}
+	}
+
+	ownerID, err := a.queries.GetUserIDBySessionHash(ctx, sessionHashHex)
 	if err != nil {
 		return "", err
+	}
+	if a.redisClient != nil {
+		_ = a.redisClient.Set(ctx, cacheKey, ownerID.String(), sessionCacheTTL).Err()
 	}
 	return ownerID.String(), nil
 }

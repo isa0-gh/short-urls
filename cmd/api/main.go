@@ -15,6 +15,7 @@ import (
 	"github.com/isa0-gh/short-urls/internal/service"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
+	"github.com/redis/go-redis/v9"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
@@ -75,11 +76,22 @@ func main() {
 	queries := db.New(DB)
 
 	defer DB.Close()
+	redisAddr := os.Getenv("REDIS_ADDR")
+	if redisAddr == "" {
+		redisAddr = "localhost:6379"
+	}
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:         redisAddr,
+		DialTimeout:  100 * time.Millisecond,
+		ReadTimeout:  100 * time.Millisecond,
+		WriteTimeout: 100 * time.Millisecond,
+	})
+	defer redisClient.Close()
 
 	// services
-	authSrv := service.NewAuthService(queries, SessionExp)
-	userSrv := service.NewUserService(queries)
-	linkSrv := service.NewShortLinkService(queries, nil)
+	authSrv := service.NewAuthService(queries, redisClient, SessionExp)
+	userSrv := service.NewUserService(queries, redisClient)
+	linkSrv := service.NewShortLinkService(queries, redisClient)
 
 	// handlers
 	authHandler := handler.NewAuthHandler(userSrv, authSrv)
