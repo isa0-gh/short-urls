@@ -78,7 +78,7 @@ func (h *AuthHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusUnauthorized, "Invalid email or password")
 		return
 	}
-	token, err := h.authService.GenerateToken(userID)
+	token, err := h.authService.GenerateToken(r.Context(), userID)
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, "Failed to create token")
 		return

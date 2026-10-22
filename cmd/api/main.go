@@ -27,31 +27,26 @@ import (
 // @description Enter a bearer token in the format: Bearer {token}.
 
 var (
-	Port      string
-	DB        *pgxpool.Pool
-	JWTSecret []byte
-	JWTExp    time.Duration
+	Port       string
+	DB         *pgxpool.Pool
+	SessionExp time.Duration
 )
 
 func main() {
 	godotenv.Load()
 
-	JWTSecret = []byte(os.Getenv("JWT_SECRET"))
-	if len(JWTSecret) == 0 {
-		log.Fatal("JWT_SECRET is required")
-	}
 	Port = os.Getenv("PORT")
 	if Port == "" {
 		Port = "8080"
 	}
-	expStr := os.Getenv("JWT_ACCESS_EXP")
+	expStr := os.Getenv("SESSION_EXP")
 	if expStr == "" {
 		expStr = "1h"
 	}
 	var err error
-	JWTExp, err = time.ParseDuration(expStr)
+	SessionExp, err = time.ParseDuration(expStr)
 	if err != nil {
-		log.Fatalf("Invalid JWT_ACCESS_EXP: %v", err)
+		log.Fatalf("Invalid SESSION_EXP: %v", err)
 	}
 
 	dsn := fmt.Sprintf(
@@ -81,7 +76,7 @@ func main() {
 	defer DB.Close()
 
 	// services
-	authSrv := service.NewAuthService(queries, JWTSecret, JWTExp)
+	authSrv := service.NewAuthService(queries, SessionExp)
 	userSrv := service.NewUserService(queries)
 	linkSrv := service.NewShortLinkService(queries, nil)
 

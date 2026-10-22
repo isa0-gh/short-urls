@@ -43,13 +43,11 @@ func AuthMiddleware(authService *service.AuthService) func(http.Handler) http.Ha
 
 			tokenString := parts[1]
 
-			claims, err := authService.VerifyToken(tokenString)
+			userID, err := authService.VerifyToken(r.Context(), tokenString)
 			if err != nil {
 				response.Error(w, http.StatusUnauthorized, "Invalid or expired token")
 				return
 			}
-
-			userID := claims.UserID
 
 			ctx := WithUserID(r.Context(), userID)
 

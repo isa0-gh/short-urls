@@ -2,32 +2,28 @@ package service
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/hex"
 	"errors"
-	"fmt"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/isa0-gh/short-urls/internal/db"
+	"github.com/jackc/pgx/v5/pgtype"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthService struct {
 	queries *db.Queries
-	secret  []byte
 	exp     time.Duration
 }
 
-func NewAuthService(queries *db.Queries, secret []byte, exp time.Duration) *AuthService {
+func NewAuthService(queries *db.Queries, exp time.Duration) *AuthService {
 	return &AuthService{
 		queries: queries,
-		secret:  secret,
 		exp:     exp,
 	}
-}
-
-type CustomClaims struct {
-	UserID string `json:"id"`
-	jwt.RegisteredClaims
 }
 
 func (a *AuthService) CheckPassword(
@@ -46,41 +42,48 @@ func (a *AuthService) CheckPassword(
 	return user.ID.String(), nil
 }
 
-func (a *AuthService) GenerateToken(userID string) (string, error) {
-	now := time.Now()
-	claims := CustomClaims{
-		UserID: userID,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(now.Add(a.exp)),
-			IssuedAt:  jwt.NewNumericDate(now),
-		},
+func (a *AuthService) GenerateToken(ctx context.Context, userID string) (string, error) {
+	randomBytes := make([]byte, 25)
+	if _, err := rand.Read(randomBytes); err != nil {
+		return "", err
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(a.secret)
+	token := base64.RawURLEncoding.EncodeToString(randomBytes)
+
+	var ownerID pgtype.UUID
+	if err := ownerID.Scan(userID); err != nil {
+		return "", err
+	}
+
+	sessionHash := sha256.Sum256([]byte(token))
+	_, err := a.queries.CreateSession(ctx, db.CreateSessionParams{
+		SessionHash: hex.EncodeToString(sessionHash[:]),
+		ID:          ownerID,
+		ExpiresAt: pgtype.Timestamptz{
+			Time:  time.Now().Add(a.exp),
+			Valid: true,
+		},
+	})
 	if err != nil {
 		return "", err
 	}
-	return tokenString, nil
+
+	return token, nil
 }
 
-func (a *AuthService) VerifyToken(tokenString string) (*CustomClaims, error) {
-	claims := &CustomClaims{}
+func (a *AuthService) VerifyToken(ctx context.Context, token string) (string, error) {
+	if len(token) != 34 {
+		return "", errors.New("invalid session token")
+	}
 
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (any, error) {
-		// Prevent algorithm confusion / key substitution attacks (RFC 8725).
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return a.secret, nil
-	})
+	randomBytes, err := base64.RawURLEncoding.DecodeString(token)
+	if err != nil || len(randomBytes) != 25 || base64.RawURLEncoding.EncodeToString(randomBytes) != token {
+		return "", errors.New("invalid session token")
+	}
 
+	sessionHash := sha256.Sum256([]byte(token))
+	ownerID, err := a.queries.GetUserIDBySessionHash(ctx, hex.EncodeToString(sessionHash[:]))
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-
-	if !token.Valid {
-		return nil, errors.New("invalid token")
-	}
-
-	return claims, nil
+	return ownerID.String(), nil
 }
