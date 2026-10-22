@@ -1,0 +1,360 @@
+basePath: /
+definitions:
+  dto.CreateShortLinkRequest:
+    properties:
+      destination_url:
+        example: https://example.com/article
+        type: string
+      short_code:
+        example: abc123
+        type: string
+    required:
+    - destination_url
+    - short_code
+    type: object
+  dto.CreateUserRequest:
+    properties:
+      email:
+        example: jane@example.com
+        type: string
+      password:
+        example: example-password
+        type: string
+      username:
+        example: janedoe
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  dto.LoginResponse:
+    properties:
+      token:
+        example: eyJhbGciOi...
+        type: string
+    required:
+    - token
+    type: object
+  dto.LoginUserRequest:
+    properties:
+      email:
+        example: jane@example.com
+        type: string
+      password:
+        example: example-password
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.ShortLinkObject:
+    properties:
+      created_at:
+        example: "2026-10-22T12:00:00Z"
+        type: string
+      destination_url:
+        example: https://example.com/article
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      short_code:
+        example: abc123
+        type: string
+    required:
+    - created_at
+    - destination_url
+    - id
+    - short_code
+    type: object
+  dto.UpdateDestinationURLRequest:
+    properties:
+      destination_url:
+        example: https://example.com/updated-article
+        type: string
+    required:
+    - destination_url
+    type: object
+  dto.UserDetailsResponse:
+    properties:
+      email:
+        example: jane@example.com
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      username:
+        example: janedoe
+        type: string
+    required:
+    - email
+    - id
+    - username
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API for managing users and shortlinks.
+  title: Shortlink API
+  version: "1.0"
+paths:
+  /api/v1/create:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Short link details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateShortLinkRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a short link
+      tags:
+      - shortlinks
+  /api/v1/link/{shortCode}:
+    delete:
+      parameters:
+      - description: Short code
+        in: path
+        name: shortCode
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a short link
+      tags:
+      - shortlinks
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Short code
+        in: path
+        name: shortCode
+        required: true
+        type: string
+      - description: Updated destination URL
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateDestinationURLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update a short link
+      tags:
+      - shortlinks
+  /api/v1/links:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.ShortLinkObject'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List short links
+      tags:
+      - shortlinks
+  /api/v1/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Log in
+      tags:
+      - auth
+  /api/v1/profile:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserDetailsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user profile
+      tags:
+      - users
+  /api/v1/register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.UserDetailsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a user
+      tags:
+      - auth
+  /s/{shortCode}:
+    get:
+      parameters:
+      - description: Short code
+        in: path
+        name: shortCode
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "302":
+          description: Found
+        "404":
+          description: Short link not found
+          schema:
+            type: string
+      summary: Follow a short link
+      tags:
+      - shortlinks
+securityDefinitions:
+  BearerAuth:
+    description: 'Enter a bearer token in the format: Bearer {token}.'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
