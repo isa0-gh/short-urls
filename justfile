@@ -8,6 +8,9 @@ DOCKER_IMAGE := "short-urls"
 test:
 	go test -v ./...
 
+gen-docs:
+	swag init -g cmd/api/main.go --parseInternal -o docs
+
 check: test
     govulncheck ./...
 
@@ -17,13 +20,12 @@ default:
 sqlc:
 	sqlc generate
 
-build: sqlc
+build: gen-docs
 	go build -o {{BINARY_NAME}} {{MAIN_PATH}}
 
 run: sqlc
 	go run {{BINARY_NAME}}
-gen-docs:
-	swag init -g cmd/api/main.go --parseInternal -o docs
+
 release version:
     @current_branch=$$(git branch --show-current); \
     if [ "$$current_branch" != "main" ]; then \

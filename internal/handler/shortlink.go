@@ -105,18 +105,18 @@ func (h *ShortLinkHandler) ListShortLinks(w http.ResponseWriter, r *http.Request
 // @Tags shortlinks
 // @Produce json
 // @Security BearerAuth
-// @Param shortCode path string true "Short code"
+// @Param linkID path string true "Link ID (UUID)" format(uuid)
 // @Success 200
 // @Failure 401 {object} map[string]string
 // @Failure 500 {object} map[string]string
-// @Router /api/v1/link/{shortCode} [delete]
+// @Router /api/v1/link/{linkID} [delete]
 func (h *ShortLinkHandler) DeleteShortLink(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middleware.UserIDFromContext(r.Context())
 	if !ok {
 		response.Unauthorized(w)
 		return
 	}
-	err := h.linkService.DeleteShortLink(r.Context(), userID, r.PathValue("shortCode"))
+	err := h.linkService.DeleteShortLink(r.Context(), userID, r.PathValue("linkID"))
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, "Failed to delete link")
 		return
@@ -130,13 +130,13 @@ func (h *ShortLinkHandler) DeleteShortLink(w http.ResponseWriter, r *http.Reques
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param shortCode path string true "Short code"
+// @Param linkID path string true "Link ID (UUID)" format(uuid)
 // @Param request body dto.UpdateDestinationURLRequest true "Updated destination URL"
 // @Success 200
 // @Failure 400 {object} map[string]string
 // @Failure 401 {object} map[string]string
 // @Failure 500 {object} map[string]string
-// @Router /api/v1/link/{shortCode} [post]
+// @Router /api/v1/link/{linkID} [post]
 func (h *ShortLinkHandler) UpdateShortLink(w http.ResponseWriter, r *http.Request) {
 	var req dto.UpdateDestinationURLRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -148,9 +148,9 @@ func (h *ShortLinkHandler) UpdateShortLink(w http.ResponseWriter, r *http.Reques
 		response.Unauthorized(w)
 		return
 	}
-	err := h.linkService.UpdateDestination(r.Context(), userID, r.PathValue("shortCode"), req.NewURL)
+	err := h.linkService.UpdateDestination(r.Context(), userID, r.PathValue("linkID"), req.NewURL)
 	if err != nil {
-		response.Error(w, http.StatusInternalServerError, "Failed to delete link")
+		response.Error(w, http.StatusInternalServerError, "Failed to update link")
 		return
 	}
 	response.JSON(w, http.StatusOK, nil)

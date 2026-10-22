@@ -6,7 +6,6 @@
         "contact": {},
         "version": "1.0"
     },
-    "host": "localhost:8080",
     "basePath": "/",
     "paths": {
         "/api/v1/create": {
@@ -62,7 +61,7 @@
                 }
             }
         },
-        "/api/v1/link/{shortCode}": {
+        "/api/v1/link/{linkID}": {
             "post": {
                 "security": [
                     {
@@ -82,8 +81,9 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Short code",
-                        "name": "shortCode",
+                        "format": "uuid",
+                        "description": "Link ID (UUID)",
+                        "name": "linkID",
                         "in": "path",
                         "required": true
                     },
@@ -146,8 +146,9 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Short code",
-                        "name": "shortCode",
+                        "format": "uuid",
+                        "description": "Link ID (UUID)",
+                        "name": "linkID",
                         "in": "path",
                         "required": true
                     }

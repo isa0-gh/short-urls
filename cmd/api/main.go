@@ -8,18 +8,19 @@ import (
 	"os"
 	"time"
 
+	_ "github.com/isa0-gh/short-urls/docs"
 	"github.com/isa0-gh/short-urls/internal/db"
 	"github.com/isa0-gh/short-urls/internal/handler"
 	"github.com/isa0-gh/short-urls/internal/middleware"
 	"github.com/isa0-gh/short-urls/internal/service"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 // @title       Shortlink API
 // @version     1.0
 // @description API for managing users and shortlinks.
-// @host        localhost:8080
 // @BasePath    /
 // @securityDefinitions.apikey BearerAuth
 // @in header
@@ -101,12 +102,13 @@ func main() {
 	apiMux.Handle("GET /profile", protected(userHandler.GetUserDetails))
 
 	apiMux.Handle("POST /create", protected(linkHandler.CreateShortlink))
-	apiMux.Handle("DELETE /link/{shortCode}", protected(linkHandler.DeleteShortLink))
-	apiMux.Handle("POST /link/{shortCode}", protected(linkHandler.UpdateShortLink))
+	apiMux.Handle("DELETE /link/{linkID}", protected(linkHandler.DeleteShortLink))
+	apiMux.Handle("POST /link/{linkID}", protected(linkHandler.UpdateShortLink))
 	apiMux.Handle("GET /links", protected(linkHandler.ListShortLinks))
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /s/{shortCode}", linkHandler.RedirectToDestination)
 	mux.Handle("/api/v1/", http.StripPrefix("/api/v1", apiMux))
+	mux.Handle("GET /swagger/", httpSwagger.Handler(httpSwagger.URL("/swagger/doc.json")))
 	http.ListenAndServe(":"+Port, mux)
 }

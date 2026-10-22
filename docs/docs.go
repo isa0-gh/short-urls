@@ -68,7 +68,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/link/{shortCode}": {
+        "/api/v1/link/{linkID}": {
             "post": {
                 "security": [
                     {
@@ -88,8 +88,9 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Short code",
-                        "name": "shortCode",
+                        "format": "uuid",
+                        "description": "Link ID (UUID)",
+                        "name": "linkID",
                         "in": "path",
                         "required": true
                     },
@@ -152,8 +153,9 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Short code",
-                        "name": "shortCode",
+                        "format": "uuid",
+                        "description": "Link ID (UUID)",
+                        "name": "linkID",
                         "in": "path",
                         "required": true
                     }
@@ -557,7 +559,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
+	Host:             "",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Shortlink API",
