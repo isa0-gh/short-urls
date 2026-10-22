@@ -1,6 +1,6 @@
 module github.com/isa0-gh/short-urls
 
-go 1.27
+go 1.27.3
 
 require (
 	github.com/jackc/pgx/v5 v5.11.0
