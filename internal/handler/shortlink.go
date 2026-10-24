@@ -49,9 +49,10 @@ func (h *ShortLinkHandler) RedirectToDestination(w http.ResponseWriter, r *http.
 // @Produce json
 // @Security BearerAuth
 // @Param request body dto.CreateShortLinkRequest true "Short link details"
-// @Success 200
+// @Success 201 {object} dto.ShortLinkObject
 // @Failure 400 {object} map[string]string
 // @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /api/v1/create [post]
 func (h *ShortLinkHandler) CreateShortlink(w http.ResponseWriter, r *http.Request) {
 	var req dto.CreateShortLinkRequest
@@ -65,7 +66,17 @@ func (h *ShortLinkHandler) CreateShortlink(w http.ResponseWriter, r *http.Reques
 		response.Unauthorized(w)
 		return
 	}
-	h.linkService.CreateShortLink(r.Context(), userID, req.ShortCode, req.DestinationURL)
+	link, err := h.linkService.CreateShortLink(r.Context(), userID, req.ShortCode, req.DestinationURL)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, "Failed to create link")
+		return
+	}
+	response.JSON(w, http.StatusCreated, dto.ShortLinkObject{
+		ID:             link.ID.String(),
+		ShortCode:      link.ShortCode,
+		DestinationURL: link.DestinationUrl,
+		CreatedAt:      link.CreatedAt.Time.Format(time.RFC3339),
+	})
 }
 
 // ListShortLinks returns the authenticated user's short links.
