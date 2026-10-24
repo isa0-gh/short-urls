@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
@@ -59,7 +60,6 @@ func main() {
 		os.Getenv("POSTGRES_PASSWORD"),
 		os.Getenv("POSTGRES_DB"),
 	)
-	fmt.Println(dsn)
 	config, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
 		log.Fatalf("Failed to parse DB config: %v", err)
@@ -122,5 +122,18 @@ func main() {
 	mux.HandleFunc("GET /s/{shortCode}", linkHandler.RedirectToDestination)
 	mux.Handle("/api/v1/", http.StripPrefix("/api/v1", apiMux))
 	mux.Handle("GET /swagger/", httpSwagger.Handler(httpSwagger.URL("/swagger/doc.json")))
-	http.ListenAndServe(":"+Port, mux)
+
+	logOutput := os.Stdout
+	if logPath := os.Getenv("LOG_FILE"); logPath != "" {
+		logFile, err := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatalf("Failed to open log file: %v", err)
+		}
+		defer logFile.Close()
+		logOutput = logFile
+	}
+
+	logger := slog.New(slog.NewJSONHandler(logOutput, nil))
+	loggedMux := middleware.LoggingMiddleware(logger)(mux)
+	http.ListenAndServe(":"+Port, loggedMux)
 }
