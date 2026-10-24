@@ -6,6 +6,11 @@ import (
 )
 
 func JSON(w http.ResponseWriter, status int, data any) error {
+	if data == nil {
+		w.WriteHeader(status)
+		return nil
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 
