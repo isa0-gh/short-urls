@@ -14,6 +14,7 @@ import (
 	"github.com/isa0-gh/short-urls/internal/handler"
 	"github.com/isa0-gh/short-urls/internal/middleware"
 	"github.com/isa0-gh/short-urls/internal/service"
+	webui "github.com/isa0-gh/short-urls/internal/web"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
@@ -119,6 +120,7 @@ func main() {
 	apiMux.Handle("GET /links", protected(linkHandler.ListShortLinks))
 
 	mux := http.NewServeMux()
+	webui.RegisterRoutes(mux)
 	mux.HandleFunc("GET /s/{shortCode}", linkHandler.RedirectToDestination)
 	mux.Handle("/api/v1/", http.StripPrefix("/api/v1", apiMux))
 	mux.Handle("GET /swagger/", httpSwagger.Handler(httpSwagger.URL("/swagger/doc.json")))

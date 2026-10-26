@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Your links | Short URLs</title>
+    <link rel="stylesheet" href="/assets/app.css">
+    <script src="/assets/app.js" defer></script>
+</head>
+
+<body data-page="dashboard">
+    <header class="navbar" id="navbar"></header>
+    <main class="wide page">
+        <section class="page-heading">
+            <div>
+                <h1>Your links</h1>
+                <p id="profile" class="muted">Loading account...</p>
+            </div>
+        </section>
+
+        <form class="panel create-form" id="create-form">
+            <h2>Create a short link</h2>
+            <div class="form-grid">
+                <div>
+                    <label for="short-code">Short code</label>
+                    <input id="short-code" name="short_code" autocomplete="off" required>
+                </div>
+                <div>
+                    <label for="destination-url">Destination URL</label>
+                    <input id="destination-url" name="destination_url" type="url" placeholder="https://example.com"
+                        required>
+                </div>
+                <div class="form-action">
+                    <button type="submit">Create link</button>
+                </div>
+            </div>
+            <p class="message" id="create-message" role="status" aria-live="polite"></p>
+        </form>
+
+        <section class="links-section">
+            <div class="section-heading">
+                <h2>Saved links</h2>
+                <p id="links-message" class="message" role="status" aria-live="polite"></p>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Short link</th>
+                            <th>Destination</th>
+                            <th>Created</th>
+                            <th><span class="visually-hidden">Actions</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="links-table"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>

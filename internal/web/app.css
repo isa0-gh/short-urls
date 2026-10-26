@@ -1,0 +1,320 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    color: #222;
+    background: #f7f7f7;
+    font: 16px/1.5 system-ui, sans-serif;
+}
+
+a {
+    color: inherit;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+}
+
+.brand {
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.page {
+    width: min(100% - 2rem, 24rem);
+    margin: 4rem auto;
+}
+
+.form {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    background: #fff;
+    border: 1px solid #ddd;
+}
+
+h1 {
+    margin: 0 0 0.5rem;
+    font-size: 1.5rem;
+}
+
+input,
+button {
+    width: 100%;
+    padding: 0.65rem;
+    font: inherit;
+}
+
+input {
+    border: 1px solid #aaa;
+}
+
+button {
+    margin-top: 0.5rem;
+    color: #fff;
+    background: #222;
+    border: 0;
+    cursor: pointer;
+}
+
+.message {
+    min-height: 1.5em;
+    margin: 0;
+    color: #a21d1d;
+}
+
+.navbar {
+    min-height: 3.75rem;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem max(1rem, calc((100vw - 72rem) / 2));
+}
+
+.brand {
+    color: #202522;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.nav-actions button {
+    width: auto;
+    margin: 0;
+}
+
+.page {
+    margin: 2.5rem auto;
+}
+
+.narrow {
+    width: min(100% - 2rem, 26rem);
+}
+
+.wide {
+    width: min(100% - 2rem, 72rem);
+}
+
+.panel {
+    padding: 1.25rem;
+    background: #fff;
+    border: 1px solid #dce2dc;
+}
+
+h1,
+h2,
+p {
+    margin-top: 0;
+}
+
+h2 {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.form {
+    gap: 0.65rem;
+}
+
+label {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+input,
+button {
+    min-height: 2.65rem;
+    padding: 0.55rem 0.7rem;
+}
+
+input {
+    color: inherit;
+    background: #fff;
+    border: 1px solid #aeb9b0;
+    border-radius: 3px;
+}
+
+input:focus {
+    border-color: #176b47;
+    outline: 2px solid #176b4733;
+}
+
+button {
+    color: #fff;
+    background: #176b47;
+    border: 1px solid #176b47;
+    border-radius: 3px;
+}
+
+button:hover {
+    background: #105638;
+}
+
+button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.message {
+    font-size: 0.9rem;
+}
+
+.message.success {
+    color: #176b47;
+}
+
+.page-heading,
+.section-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.page-heading h1,
+.section-heading h2 {
+    margin-bottom: 0.25rem;
+}
+
+.muted {
+    color: #647067;
+}
+
+.create-form {
+    margin: 1.5rem 0 2rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: minmax(10rem, 0.7fr) minmax(16rem, 2fr) auto;
+    align-items: end;
+    gap: 0.75rem;
+}
+
+.form-grid>div:not(.form-action) {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.form-action button {
+    width: auto;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.create-form>.message {
+    margin-top: 0.5rem;
+}
+
+.links-section {
+    margin-top: 2rem;
+}
+
+.table-wrap {
+    overflow-x: auto;
+    background: #fff;
+    border: 1px solid #dce2dc;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+th,
+td {
+    padding: 0.8rem;
+    border-bottom: 1px solid #e6eae6;
+    vertical-align: top;
+}
+
+th {
+    color: #59645c;
+    background: #fafbfa;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+td {
+    font-size: 0.9rem;
+}
+
+td a {
+    word-break: break-word;
+}
+
+.row-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.45rem;
+    white-space: nowrap;
+}
+
+.row-actions button {
+    width: auto;
+    min-height: 2rem;
+    margin: 0;
+    padding: 0.25rem 0.55rem;
+    color: #24543b;
+    background: #fff;
+    border-color: #aeb9b0;
+    font-size: 0.8rem;
+}
+
+.row-actions button:hover {
+    background: #f1f6f2;
+}
+
+.row-actions .delete-button {
+    color: #a22;
+}
+
+.empty-cell {
+    padding: 1.5rem;
+    color: #647067;
+    text-align: center;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@media (max-width: 700px) {
+    .navbar {
+        padding-inline: 1rem;
+    }
+
+    .page {
+        margin-top: 1.5rem;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-action button {
+        width: 100%;
+    }
+
+    th,
+    td {
+        padding: 0.65rem;
+    }
+}
