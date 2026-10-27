@@ -80,9 +80,3 @@ just build      # Build the API binary
 ## Project status
 
 This project is under active development.
-
-## TODO
-- [x] Add web UI
-- [ ] Add better error messages
-- [ ] Handle sql row errors better rather than unknown db error
-- [ ] Add user account delete
