@@ -2,11 +2,12 @@ package service
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/isa0-gh/short-urls/internal/db"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/redis/go-redis/v9"
 )
@@ -158,7 +159,7 @@ func (s *ShortLinkService) ListShortLinks(
 
 	links, err := s.queries.ListShortLinks(ctx,
 		db.ListShortLinksParams{OwnerID: ownerID, Limit: limit})
-	if err == sql.ErrNoRows {
+	if errors.Is(err, pgx.ErrNoRows) {
 		return links, nil
 	}
 	if err != nil {
