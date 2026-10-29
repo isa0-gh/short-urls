@@ -19,7 +19,7 @@ const docTemplate = `{
             "post": {
                 "security": [
                     {
-                        "BearerAuth": []
+                        "SessionCookie": []
                     }
                 ],
                 "consumes": [
@@ -84,7 +84,7 @@ const docTemplate = `{
             "post": {
                 "security": [
                     {
-                        "BearerAuth": []
+                        "SessionCookie": []
                     }
                 ],
                 "consumes": [
@@ -152,7 +152,7 @@ const docTemplate = `{
             "delete": {
                 "security": [
                     {
-                        "BearerAuth": []
+                        "SessionCookie": []
                     }
                 ],
                 "produces": [
@@ -201,7 +201,7 @@ const docTemplate = `{
             "get": {
                 "security": [
                     {
-                        "BearerAuth": []
+                        "SessionCookie": []
                     }
                 ],
                 "produces": [
@@ -268,8 +268,11 @@ const docTemplate = `{
                 "responses": {
                     "201": {
                         "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/dto.LoginResponse"
+                        "headers": {
+                            "Set-Cookie": {
+                                "type": "string",
+                                "description": "HttpOnly session cookie"
+                            }
                         }
                     },
                     "400": {
@@ -302,11 +305,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/logout": {
+            "post": {
+                "security": [
+                    {
+                        "SessionCookie": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Log out",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/profile": {
             "get": {
                 "security": [
                     {
-                        "BearerAuth": []
+                        "SessionCookie": []
                     }
                 ],
                 "produces": [
@@ -467,18 +500,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.LoginResponse": {
-            "type": "object",
-            "required": [
-                "token"
-            ],
-            "properties": {
-                "token": {
-                    "type": "string",
-                    "example": "eyJhbGciOi..."
-                }
-            }
-        },
         "dto.LoginUserRequest": {
             "type": "object",
             "required": [
@@ -559,11 +580,11 @@ const docTemplate = `{
         }
     },
     "securityDefinitions": {
-        "BearerAuth": {
-            "description": "Enter a bearer token in the format: Bearer {token}.",
+        "SessionCookie": {
+            "description": "HTTP-only session cookie.",
             "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
+            "name": "session",
+            "in": "cookie"
         }
     }
 }`

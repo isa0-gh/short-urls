@@ -25,10 +25,10 @@ import (
 // @version     1.0
 // @description API for managing users and shortlinks.
 // @BasePath    /
-// @securityDefinitions.apikey BearerAuth
-// @in header
-// @name Authorization
-// @description Enter a bearer token in the format: Bearer {token}.
+// @securityDefinitions.apikey SessionCookie
+// @in cookie
+// @name session
+// @description HTTP-only session cookie.
 
 var (
 	Port       string
@@ -104,6 +104,7 @@ func main() {
 
 	// public routes
 	apiMux.HandleFunc("POST /login", authHandler.LoginUser)
+	apiMux.HandleFunc("POST /logout", authHandler.LogoutUser)
 	apiMux.HandleFunc("POST /register", authHandler.CreateUser)
 
 	authMiddleware := middleware.AuthMiddleware(authSrv)

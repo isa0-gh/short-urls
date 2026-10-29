@@ -16,6 +16,7 @@ import (
 )
 
 const sessionCacheTTL = 5 * time.Minute
+const SessionCookieName = "session"
 
 type AuthService struct {
 	queries     *db.Queries
@@ -106,4 +107,13 @@ func (a *AuthService) VerifyToken(ctx context.Context, token string) (string, er
 		_ = a.redisClient.Set(ctx, cacheKey, ownerID.String(), sessionCacheTTL).Err()
 	}
 	return ownerID.String(), nil
+}
+
+func (a *AuthService) RevokeToken(ctx context.Context, token string) error {
+	sessionHash := sha256.Sum256([]byte(token))
+	sessionHashHex := hex.EncodeToString(sessionHash[:])
+	if a.redisClient != nil {
+		_ = a.redisClient.Del(ctx, "session:"+sessionHashHex).Err()
+	}
+	return a.queries.LogoutSession(ctx, sessionHashHex)
 }

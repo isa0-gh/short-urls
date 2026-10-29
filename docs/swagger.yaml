@@ -28,14 +28,6 @@ definitions:
     - password
     - username
     type: object
-  dto.LoginResponse:
-    properties:
-      token:
-        example: eyJhbGciOi...
-        type: string
-    required:
-    - token
-    type: object
   dto.LoginUserRequest:
     properties:
       email:
@@ -135,7 +127,7 @@ paths:
               type: string
             type: object
       security:
-      - BearerAuth: []
+      - SessionCookie: []
       summary: Create a short link
       tags:
       - shortlinks
@@ -166,7 +158,7 @@ paths:
               type: string
             type: object
       security:
-      - BearerAuth: []
+      - SessionCookie: []
       summary: Delete a short link
       tags:
       - shortlinks
@@ -210,7 +202,7 @@ paths:
               type: string
             type: object
       security:
-      - BearerAuth: []
+      - SessionCookie: []
       summary: Update a short link
       tags:
       - shortlinks
@@ -238,7 +230,7 @@ paths:
               type: string
             type: object
       security:
-      - BearerAuth: []
+      - SessionCookie: []
       summary: List short links
       tags:
       - shortlinks
@@ -258,8 +250,10 @@ paths:
       responses:
         "201":
           description: Created
-          schema:
-            $ref: '#/definitions/dto.LoginResponse'
+          headers:
+            Set-Cookie:
+              description: HttpOnly session cookie
+              type: string
         "400":
           description: Bad Request
           schema:
@@ -279,6 +273,24 @@ paths:
               type: string
             type: object
       summary: Log in
+      tags:
+      - auth
+  /api/v1/logout:
+    post:
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - SessionCookie: []
+      summary: Log out
       tags:
       - auth
   /api/v1/profile:
@@ -303,7 +315,7 @@ paths:
               type: string
             type: object
       security:
-      - BearerAuth: []
+      - SessionCookie: []
       summary: Get user profile
       tags:
       - users
@@ -361,9 +373,9 @@ paths:
       tags:
       - shortlinks
 securityDefinitions:
-  BearerAuth:
-    description: 'Enter a bearer token in the format: Bearer {token}.'
-    in: header
-    name: Authorization
+  SessionCookie:
+    description: HTTP-only session cookie.
+    in: cookie
+    name: session
     type: apiKey
 swagger: "2.0"

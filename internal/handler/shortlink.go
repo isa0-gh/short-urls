@@ -47,7 +47,7 @@ func (h *ShortLinkHandler) RedirectToDestination(w http.ResponseWriter, r *http.
 // @Tags shortlinks
 // @Accept json
 // @Produce json
-// @Security BearerAuth
+// @Security SessionCookie
 // @Param request body dto.CreateShortLinkRequest true "Short link details"
 // @Success 201 {object} dto.ShortLinkObject
 // @Failure 400 {object} map[string]string
@@ -83,7 +83,7 @@ func (h *ShortLinkHandler) CreateShortlink(w http.ResponseWriter, r *http.Reques
 // @Summary List short links
 // @Tags shortlinks
 // @Produce json
-// @Security BearerAuth
+// @Security SessionCookie
 // @Success 200 {array} dto.ShortLinkObject
 // @Failure 401 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -115,7 +115,7 @@ func (h *ShortLinkHandler) ListShortLinks(w http.ResponseWriter, r *http.Request
 // @Summary Delete a short link
 // @Tags shortlinks
 // @Produce json
-// @Security BearerAuth
+// @Security SessionCookie
 // @Param linkID path string true "Link ID (UUID)" format(uuid)
 // @Success 200
 // @Failure 401 {object} map[string]string
@@ -140,7 +140,7 @@ func (h *ShortLinkHandler) DeleteShortLink(w http.ResponseWriter, r *http.Reques
 // @Tags shortlinks
 // @Accept json
 // @Produce json
-// @Security BearerAuth
+// @Security SessionCookie
 // @Param linkID path string true "Link ID (UUID)" format(uuid)
 // @Param request body dto.UpdateDestinationURLRequest true "Updated destination URL"
 // @Success 200

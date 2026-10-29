@@ -23,7 +23,7 @@ func NewUserHandler(userService *service.UserService) *UserHandler {
 // @Summary Get user profile
 // @Tags users
 // @Produce json
-// @Security BearerAuth
+// @Security SessionCookie
 // @Success 200 {object} dto.UserDetailsResponse
 // @Failure 401 {object} map[string]string
 // @Failure 500 {object} map[string]string

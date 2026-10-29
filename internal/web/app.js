@@ -1,5 +1,4 @@
 const apiBase = "/api/v1";
-const tokenKey = "token";
 
 function makeLink(label, href) {
     const link = document.createElement("a");
@@ -26,9 +25,12 @@ function renderNavbar(page) {
         const logout = document.createElement("button");
         logout.type = "button";
         logout.textContent = "Log out";
-        logout.addEventListener("click", () => {
-            localStorage.removeItem(tokenKey);
-            window.location.replace("/login");
+        logout.addEventListener("click", async () => {
+            try {
+                await request("/logout", { method: "POST" });
+            } finally {
+                window.location.replace("/login");
+            }
         });
         actions.append(logout);
     } else if (page === "register") {
@@ -45,13 +47,15 @@ function setMessage(element, text, success = false) {
     element.classList.toggle("success", success);
 }
 
-async function request(path, options = {}, authenticated = true) {
+async function request(path, options = {}) {
     const headers = new Headers(options.headers || {});
-    const token = authenticated ? localStorage.getItem(tokenKey) : null;
-    if (token) headers.set("Authorization", `Bearer ${token}`);
     if (options.body) headers.set("Content-Type", "application/json");
 
-    const response = await fetch(`${apiBase}${path}`, { ...options, headers });
+    const response = await fetch(`${apiBase}${path}`, {
+        ...options,
+        credentials: "same-origin",
+        headers,
+    });
     const text = await response.text();
     let result = null;
     if (text) {
@@ -62,8 +66,7 @@ async function request(path, options = {}, authenticated = true) {
         }
     }
 
-    if (response.status === 401 && token) {
-        localStorage.removeItem(tokenKey);
+    if (response.status === 401) {
         window.location.replace("/login");
     }
     if (!response.ok) {
@@ -100,11 +103,10 @@ function setupLogin() {
         setMessage(message, "");
         setBusy(form, true, "Logging in...");
         try {
-            const result = await request("/login", {
+            await request("/login", {
                 method: "POST",
                 body: JSON.stringify(valuesFrom(form)),
-            }, false);
-            localStorage.setItem(tokenKey, result.token);
+            });
             window.location.assign("/dashboard");
         } catch (error) {
             setMessage(message, error.message || "Could not connect. Please try again.");
@@ -125,7 +127,7 @@ function setupRegister() {
             await request("/register", {
                 method: "POST",
                 body: JSON.stringify(valuesFrom(form)),
-            }, false);
+            });
             window.location.assign("/login?registered=1");
         } catch (error) {
             setMessage(message, error.message || "Could not create account. Please try again.");
@@ -259,11 +261,6 @@ async function loadDashboard() {
 }
 
 function setupDashboard() {
-    if (!localStorage.getItem(tokenKey)) {
-        window.location.replace("/login");
-        return;
-    }
-
     const form = document.querySelector("#create-form");
     const message = document.querySelector("#create-message");
     form.addEventListener("submit", async (event) => {

@@ -3,7 +3,6 @@ package middleware
 import (
 	"context"
 	"net/http"
-	"strings"
 
 	"github.com/isa0-gh/short-urls/internal/response"
 	"github.com/isa0-gh/short-urls/internal/service"
@@ -28,22 +27,13 @@ func AuthMiddleware(authService *service.AuthService) func(http.Handler) http.Ha
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-			authHeader := r.Header.Get("Authorization")
-			if authHeader == "" {
-				response.Error(w, http.StatusUnauthorized, "Missing authorization header")
+			cookie, err := r.Cookie(service.SessionCookieName)
+			if err != nil || cookie.Value == "" {
+				response.Error(w, http.StatusUnauthorized, "Missing session cookie")
 				return
 			}
 
-			// Validate the "Bearer <token>" header syntax (RFC 6750, Section 2.1).
-			parts := strings.SplitN(authHeader, " ", 2)
-			if len(parts) != 2 || !strings.EqualFold(parts[0], "bearer") {
-				response.Error(w, http.StatusUnauthorized, "Invalid authorization format")
-				return
-			}
-
-			tokenString := parts[1]
-
-			userID, err := authService.VerifyToken(r.Context(), tokenString)
+			userID, err := authService.VerifyToken(r.Context(), cookie.Value)
 			if err != nil {
 				response.Error(w, http.StatusUnauthorized, "Invalid or expired token")
 				return

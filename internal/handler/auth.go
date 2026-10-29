@@ -56,13 +56,14 @@ func (h *AuthHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// LoginUser authenticates a user and returns an access token.
+// LoginUser authenticates a user and creates a session cookie.
 // @Summary Log in
 // @Tags auth
 // @Accept json
 // @Produce json
 // @Param request body dto.LoginUserRequest true "Login credentials"
-// @Success 201 {object} dto.LoginResponse
+// @Success 201
+// @Header 201 {string} Set-Cookie "HttpOnly session cookie"
 // @Failure 400 {object} map[string]string
 // @Failure 401 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -83,7 +84,40 @@ func (h *AuthHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusInternalServerError, "Failed to create token")
 		return
 	}
-	response.JSON(w, http.StatusCreated, dto.LoginResponse{
-		Token: token,
+	http.SetCookie(w, &http.Cookie{
+		Name:     service.SessionCookieName,
+		Value:    token,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   r.TLS != nil,
+		SameSite: http.SameSiteLaxMode,
 	})
+	response.JSON(w, http.StatusCreated, nil)
+}
+
+// LogoutUser revokes the current session and clears its cookie.
+// @Summary Log out
+// @Tags auth
+// @Produce json
+// @Security SessionCookie
+// @Success 204
+// @Failure 500 {object} map[string]string
+// @Router /api/v1/logout [post]
+func (h *AuthHandler) LogoutUser(w http.ResponseWriter, r *http.Request) {
+	if cookie, err := r.Cookie(service.SessionCookieName); err == nil {
+		if err := h.authService.RevokeToken(r.Context(), cookie.Value); err != nil {
+			response.Error(w, http.StatusInternalServerError, "Failed to log out")
+			return
+		}
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     service.SessionCookieName,
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   r.TLS != nil,
+		SameSite: http.SameSiteLaxMode,
+	})
+	w.WriteHeader(http.StatusNoContent)
 }
