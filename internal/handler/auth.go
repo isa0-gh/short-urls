@@ -7,6 +7,7 @@ import (
 	"github.com/isa0-gh/short-urls/internal/dto"
 	"github.com/isa0-gh/short-urls/internal/response"
 	"github.com/isa0-gh/short-urls/internal/service"
+	"github.com/isa0-gh/short-urls/internal/validation"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -38,6 +39,10 @@ func (h *AuthHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
+	if err := validation.User(req.Username, req.Email, req.Password); err != nil {
+		response.Error(w, http.StatusBadRequest, err.Error())
+		return
+	}
 	hashBytes, err := bcrypt.GenerateFromPassword([]byte(req.Password), 10)
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, "Failed to create user")
@@ -45,7 +50,7 @@ func (h *AuthHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	user, err := h.userService.CreateUser(r.Context(), req.Username, req.Email, string(hashBytes))
 	if err != nil {
-		response.Error(w, http.StatusInternalServerError, "Failed to create user")
+		response.Error(w, response.DatabaseErrorStatus(err), "Failed to create user")
 		return
 	}
 	response.JSON(w, http.StatusCreated, dto.UserDetailsResponse{
@@ -72,6 +77,10 @@ func (h *AuthHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	var req dto.LoginUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+	if err := validation.Login(req.Email, req.Password); err != nil {
+		response.Error(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	userID, err := h.authService.CheckPassword(r.Context(), req.Password, req.Email)
